@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Retrieval</title>
+    <style>
+        img { width: 150px; margin: 10px; cursor: pointer; }
+        #results img { width: 220px; }
+    </style>
+</head>
+<body>
+
+<h2>Select an Image to Retrieve Similar Images</h2>
+<div id="gallery">
+    {% for image_url, image_index in images %}
+        <img src="{{ image_url }}" onclick="getSimilar({{ image_index }})">
+    {% endfor %}
+</div>
+
+<h2>Search</h2>
+<input type="text" id="query" placeholder="Enter text query">
+<button onclick="search()">Search</button>
+
+<h2>Results</h2>
+<div id="results"></div>
+
+<script>
+function getSimilar(id) {
+    fetch(`/similar/image/${id}`)
+        .then(r => r.json())
+        .then(showResults);
+}
+
+function search() {
+    const q = document.getElementById("query").value;
+    fetch("/search", {
+        method: "POST",
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: `query=${q}`
+    })
+    .then(r => r.json())
+    .then(showResults);
+}
+
+function showResults(data) {
+    const div = document.getElementById("results");
+    div.innerHTML = "";
+    data.forEach(item => {
+        const img = document.createElement("img");
+        img.src = item.path;
+        div.appendChild(img);
+    });
+}
+</script>
+
+</body>
+</html>
